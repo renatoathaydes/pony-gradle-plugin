@@ -1,0 +1,14 @@
+subprojects {
+    buildscript {
+        repositories {
+            flatDir {
+                dirs rootProject.file( '../build/libs' )
+            }
+            jcenter()
+        }
+
+        dependencies {
+            classpath "com.athaydes.gradle.pony:pony-gradle-plugin:1.0-SNAPSHOT"
+        }
+    }
+}

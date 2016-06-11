@@ -1,0 +1,30 @@
+group 'com.athaydes.pony.gradle'
+version '1.0-SNAPSHOT'
+
+repositories {
+    jcenter()
+}
+
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4", {
+        transitive = false
+    }
+}
+
+/* Publishing config */
+
+publishing {
+    publications {
+        mavenJava( MavenPublication ) {
+            from components.java
+            //       artifact sourcesJar
+        }
+    }
+}
