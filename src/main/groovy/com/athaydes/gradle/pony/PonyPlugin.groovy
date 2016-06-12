@@ -6,6 +6,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Nullable
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Path
@@ -23,6 +24,7 @@ class PonyPlugin implements Plugin<Project> {
     void apply( Project project ) {
         project.tasks.create( ResolveDependenciesTask.NAME, ResolveDependenciesTask )
         project.tasks.create( UnpackArchivesTask.NAME, UnpackArchivesTask )
+        project.tasks.create( CleanTask.NAME, CleanTask )
     }
 
 }
@@ -32,6 +34,16 @@ class PonyPackage {
     String name
     String version
     List<PonyDependency> dependencies = [ ]
+}
+
+@CompileStatic
+class CleanTask extends Delete {
+
+    static final String NAME = 'cleanPony'
+
+    CleanTask() {
+        delete( Paths.get( project.buildDir.absolutePath, "ext-libs" ).toFile() )
+    }
 }
 
 @CompileStatic

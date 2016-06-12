@@ -57,6 +57,7 @@ class PonyPackageFileParserSpec extends Specification {
         and: 'the tasks should be added'
         project.tasks.getByName( ResolveDependenciesTask.NAME )
         project.tasks.getByName( UnpackArchivesTask.NAME )
+        project.tasks.getByName( CleanTask.NAME )
     }
 
 }
