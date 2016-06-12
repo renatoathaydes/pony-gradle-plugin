@@ -19,7 +19,7 @@ Simplest possible example without any configuration (see below for defaults):
 
 ```groovy
 plugins {
-  id "com.athaydes.pony" version "1.0"
+  id "com.athaydes.pony" version "0.1.0"
 }
 ```
 
