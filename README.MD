@@ -4,14 +4,18 @@ A Gradle Plugin to build [Pony](http://www.ponylang.org/) projects.
 
 ## Features
 
+* compile Pony sources.
 * resolve dependencies using `bundle.json` - compatible with [pony-stable](https://github.com/jemc/pony-stable).
 * resolve transitive dependencies from GitHub projects.
 
 ## Build files
 
-The following build files are required at the root folder of the project:
+To enable Gradle support, a basic `build.gradle` file must be supplied.
+Dependencies are declared separately (to be compatible with `pony-stable`) in the `bundle.json` file.
 
-* `build.gradle` - the Gradle build file.
+### `build.gradle` - the Gradle build file.
+
+Simplest possible example without any configuration (see below for defaults):
 
 ```groovy
 plugins {
@@ -19,9 +23,16 @@ plugins {
 }
 ```
 
-> Currently, no configuration can be added to the Pony Gradle plugin, so the above is all you need.
+The above is all you need, but you may configure the build with the following options:
 
-* `bundle.json` - pony-stable dependencies file.
+* `packageName`: String - name of the package to compile. Defaults to `src`.
+* `docs`: boolean - whether to generate docs. Defaults to `false`.
+* `debug`: boolean - whether to use the `--debug` option (will skip the LLVM optimizations passes).
+           Defaults to `false`.
+           
+See the [pony-configured](samples/pony-configured) sample for a build file that uses all options. 
+
+### `bundle.json` - pony-stable dependencies file.
 
 Example:
 
