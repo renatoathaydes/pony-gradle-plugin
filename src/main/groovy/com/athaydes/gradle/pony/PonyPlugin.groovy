@@ -3,11 +3,15 @@ package com.athaydes.gradle.pony
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 import org.gradle.api.DefaultTask
+import org.gradle.api.Nullable
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
 
+import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
 /**
  * Pony Gradle plugin.
@@ -35,6 +39,8 @@ class ResolveDependenciesTask extends DefaultTask {
 
     static final String NAME = "resolvePonyDependencies"
 
+    final PonyPackageFileParser packageParser = new PonyPackageFileParser( project )
+
     ResolveDependenciesTask() {
         getInputs().file( project.file( "bundle.json" ) )
         getOutputs().dir( outputDir() )
@@ -51,8 +57,7 @@ class ResolveDependenciesTask extends DefaultTask {
 
         outputDir().mkdirs()
 
-        PonyPackage ponyPackage = new PonyPackageFileParser( project )
-                .parse( bundle.text )
+        PonyPackage ponyPackage = packageParser.parse( bundle.text )
 
         logger.debug( ponyPackage.toString() )
 
@@ -63,11 +68,38 @@ class ResolveDependenciesTask extends DefaultTask {
         Paths.get( project.buildDir.absolutePath, "ext-libs" ).toFile()
     }
 
-    private resolveDependencies( List<PonyDependency> dependencies ) {
+    private void resolveDependencies( List<PonyDependency> dependencies ) {
         logger.debug( "Resolving ${dependencies.size()} dependencies" )
-        dependencies.parallelStream().collect { PonyDependency it ->
-            logger.debug( "Resolved dependency: {}", it.resolvedPath() )
+        dependencies.parallelStream().each { PonyDependency it ->
+            Path depPath = it.resolvedPath()
+            logger.debug( "Resolved dependency: {}", depPath )
+            def depBundle = bundleFromZip( depPath )
+            if ( depBundle ) {
+                logger.info( "Resolving transitive dependencies of $depPath" )
+                resolveDependencies( packageParser.parse( depBundle ).dependencies )
+            } else {
+                logger.info( "No transitive dependencies found for $depPath" )
+            }
         }
+    }
+
+    @Nullable
+    private String bundleFromZip( Path zipPath ) {
+        def zip = new ZipFile( zipPath.toFile() )
+        try {
+            def bundle = zip.entries().find { ZipEntry entry ->
+                entry.name.endsWith( '/bundle.json' )
+            } as ZipEntry
+            if ( bundle ) {
+                return zip.getInputStream( bundle ).text
+            }
+        } catch ( e ) {
+            logger.error( "Problem parsing bundle.json for $zipPath", e )
+        } finally {
+            zip.close()
+        }
+
+        return null
     }
 
 }
