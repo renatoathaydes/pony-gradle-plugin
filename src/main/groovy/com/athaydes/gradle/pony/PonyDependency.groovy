@@ -34,7 +34,7 @@ class GitHubPonyDependency implements PonyDependency {
 
         def task = project.tasks.getByName( ResolveDependenciesTask.NAME ) as ResolveDependenciesTask
 
-        def repoZip = new File( task.outputDir(), zipName( repo ) )
+        def repoZip = new File( task.outputDir( project ), zipName( repo ) )
 
         // ensure the repository does not exist
         project.delete( repoZip )

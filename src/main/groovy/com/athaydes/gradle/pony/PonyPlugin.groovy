@@ -55,7 +55,7 @@ class ResolveDependenciesTask extends DefaultTask {
 
     ResolveDependenciesTask() {
         getInputs().file( project.file( "bundle.json" ) )
-        getOutputs().dir( outputDir() )
+        getOutputs().dir( outputDir( project ) )
     }
 
     @TaskAction
@@ -67,7 +67,7 @@ class ResolveDependenciesTask extends DefaultTask {
             return
         }
 
-        outputDir().mkdirs()
+        outputDir( project ).mkdirs()
 
         PonyPackage ponyPackage = packageParser.parse( bundle.text )
 
@@ -76,8 +76,8 @@ class ResolveDependenciesTask extends DefaultTask {
         resolveDependencies( ponyPackage.dependencies )
     }
 
-    File outputDir() {
-        Paths.get( project.buildDir.absolutePath, "ext-libs" ).toFile()
+    static File outputDir( Project project ) {
+        Paths.get( project.buildDir.absolutePath, "ext-libs/zips" ).toFile()
     }
 
     private void resolveDependencies( List<PonyDependency> dependencies ) {
@@ -121,20 +121,25 @@ class UnpackArchivesTask extends DefaultTask {
     static final String NAME = "unpackPonyDependencies"
 
     UnpackArchivesTask() {
-        getInputs().file( outputDir() )
+        getInputs().dir( ResolveDependenciesTask.outputDir( project ) )
+        getOutputs().dir( outputDir( project ) )
+        dependsOn project.tasks.getByName( ResolveDependenciesTask.NAME )
     }
 
     @TaskAction
     def run() {
-        def outputDir = outputDir()
-        if ( outputDir.directory ) {
-            outputDir.listFiles( { File f, String name ->
+        def zipsDir = ResolveDependenciesTask.outputDir( project )
+        if ( zipsDir.directory ) {
+            def output = outputDir( project )
+            output.mkdirs()
+
+            zipsDir.listFiles( { File f, String name ->
                 name.endsWith( '.zip' )
             } as FilenameFilter ).each { File file ->
                 logger.debug "Unzipping $file"
                 try {
                     ant.unzip( src: file,
-                            dest: outputDir,
+                            dest: output,
                             overwrite: true )
                 } catch ( e ) {
                     logger.error( "Failed to unzip file {} due to {}", file, e )
@@ -143,8 +148,8 @@ class UnpackArchivesTask extends DefaultTask {
         }
     }
 
-    File outputDir() {
-        Paths.get( project.buildDir.absolutePath, "ext-libs" ).toFile()
+    static File outputDir( Project project ) {
+        Paths.get( project.buildDir.absolutePath, "ext-libs/unpacked" ).toFile()
     }
 
 }
