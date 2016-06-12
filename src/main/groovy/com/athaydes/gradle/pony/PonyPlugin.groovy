@@ -195,7 +195,7 @@ class CompilePonyTask extends DefaultTask {
     private String pathOption() {
         def dirs = UnpackArchivesTask.outputDir( project ).listFiles( { File f -> f.directory } as FileFilter )
         if ( dirs ) {
-            return ' --path ' + dirs.collect { File f -> f.absolutePath }.join( ':' )
+            return ' --path ' + UnpackArchivesTask.outputDir( project ).absolutePath
         } else {
             return ''
         }

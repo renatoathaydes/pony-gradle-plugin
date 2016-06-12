@@ -3,6 +3,7 @@ package com.athaydes.gradle.pony
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
+import org.gradle.api.GradleException
 import org.gradle.api.Nullable
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
@@ -35,9 +36,7 @@ class GitHubPonyDependency implements PonyDependency {
 
         URL zipBallUrl = resolveZipUrl( tags )
 
-        def task = project.tasks.getByName( ResolveDependenciesTask.NAME ) as ResolveDependenciesTask
-
-        def repoZip = new File( task.outputDir( project ), zipName( repo ) )
+        def repoZip = new File( ResolveDependenciesTask.outputDir( project ), zipName( repo ) )
 
         // ensure the repository does not exist
         project.delete( repoZip )
@@ -83,4 +82,33 @@ class GitHubPonyDependency implements PonyDependency {
         repo.replace( '/', '-' ).replace( '\\', '-' ) + '.zip'
     }
 
+}
+
+@Immutable( knownImmutableClasses = [ Project ] )
+class LocalDependency implements PonyDependency {
+
+    static final Logger logger = Logging.getLogger( LocalDependency )
+
+    Project project
+    String dependencyPath
+
+    @Override
+    Path resolvedPath() {
+        logger.debug( "Resolving local dependency: {}", dependencyPath )
+
+        def dep = project.file( dependencyPath )
+        if ( !dep.directory ) {
+            throw new GradleException( "Cannot resolve local dependency: $dependencyPath (not a directory)" )
+        }
+
+        def destinationZip = new File( ResolveDependenciesTask.outputDir( project ), dep.name + '.zip' )
+
+        logger.info( "Zipping local dependency to {}", destinationZip )
+
+        project.ant.zip( destfile: destinationZip.absolutePath ) {
+            fileset( dir: dep.absolutePath )
+        }
+
+        return destinationZip.toPath()
+    }
 }

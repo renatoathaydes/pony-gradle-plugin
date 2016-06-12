@@ -29,7 +29,8 @@ class PonyPackageFileParserSpec extends Specification {
     @Shared
     def parsedVersionedPackage = new PonyPackage( 'versioned-project', '2.3.4',
             [ new GitHubPonyDependency( testProject, 'jemc/pony-inspect', '1.0.1' ),
-              new GitHubPonyDependency( testProject, 'other/dep', null ) ] )
+              new GitHubPonyDependency( testProject, 'other/dep', null ),
+              new LocalDependency( testProject, '..' ) ] )
 
     static final versionedPackage = '''
 {
@@ -37,7 +38,8 @@ class PonyPackageFileParserSpec extends Specification {
   "version": "2.3.4",
   "deps": [
     { "type": "github", "repo": "jemc/pony-inspect", "version": "1.0.1" },
-    { "type": "github", "repo": "other/dep" }
+    { "type": "github", "repo": "other/dep" },
+    { "type": "local", "local-path": ".." }
   ]
 }'''
 

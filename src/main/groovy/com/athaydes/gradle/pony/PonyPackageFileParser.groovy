@@ -53,6 +53,7 @@ class PonyPackageFileParser {
         // TODO add other types of dependencies
         switch ( type ) {
             case "github": return parseGitHubDep( map )
+            case "local": return parseLocalDep( map )
             case null: throw new GradleException( "Must provide dependency type for '$map'" )
             default:
                 throw new GradleException( "Unrecognized dependency type: $type" )
@@ -60,16 +61,16 @@ class PonyPackageFileParser {
     }
 
     PonyDependency parseGitHubDep( Map map ) {
-        def properties = new HashMap<String, String>( map.size() )
-
-        map.each { key, value ->
-            properties[ key.toString() ] = value.toString()
-        }
-
         def repo = map[ "repo" ] as String
         def version = map[ "version" ] as String
 
         return new GitHubPonyDependency( project, repo, version )
+    }
+
+    PonyDependency parseLocalDep( Map map ) {
+        def path = map[ "local-path" ] as String
+
+        return new LocalDependency( project, path )
     }
 
 }
