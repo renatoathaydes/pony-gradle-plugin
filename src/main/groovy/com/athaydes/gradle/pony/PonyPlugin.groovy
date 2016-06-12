@@ -45,6 +45,9 @@ class CleanTask extends Delete {
     static final String NAME = 'cleanPony'
 
     CleanTask() {
+        description = 'deletes all artifacts created by previous builds'
+        group = 'build'
+
         delete( project.buildDir )
     }
 }
@@ -57,6 +60,9 @@ class ResolveDependenciesTask extends DefaultTask {
     final PonyPackageFileParser packageParser = new PonyPackageFileParser( project )
 
     ResolveDependenciesTask() {
+        description = 'resolves the project dependencies'
+        group = 'build'
+
         getInputs().file( project.file( "bundle.json" ) )
         getOutputs().dir( outputDir( project ) )
     }
@@ -124,6 +130,9 @@ class UnpackArchivesTask extends DefaultTask {
     static final String NAME = "unpackPonyDependencies"
 
     UnpackArchivesTask() {
+        description = 'unpacks the dependencies archives'
+        group = 'build'
+
         getInputs().dir( ResolveDependenciesTask.outputDir( project ) )
         getOutputs().dir( outputDir( project ) )
         dependsOn project.tasks.getByName( ResolveDependenciesTask.NAME )
@@ -163,6 +172,8 @@ class CompilePonyTask extends DefaultTask {
     static final String NAME = 'compilePony'
 
     CompilePonyTask() {
+        description = 'compiles Pony sources and dependencies'
+
         getInputs().dir( UnpackArchivesTask.outputDir( project ) )
         getOutputs().dir( outputDir( project ) )
         dependsOn project.tasks.getByName( UnpackArchivesTask.NAME )
