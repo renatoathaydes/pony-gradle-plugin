@@ -30,7 +30,7 @@ The above is all you need, but you may configure the build with the following op
 * `debug`: boolean - whether to use the `--debug` option (will skip the LLVM optimizations passes).
            Defaults to `false`.
            
-To get started, see the [Hello World](samples/basic-sample) sample.
+To get started, see the [Hello World](samples/hello-world) sample.
 
 See the [pony-configured](samples/pony-configured) sample for a build file that uses all options. 
 
