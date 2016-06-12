@@ -23,6 +23,7 @@ class PonyPlugin implements Plugin<Project> {
 
     @Override
     void apply( Project project ) {
+        project.extensions.create( 'pony', PonyConfig )
         project.tasks.create( ResolveDependenciesTask.NAME, ResolveDependenciesTask )
         project.tasks.create( UnpackArchivesTask.NAME, UnpackArchivesTask )
         project.tasks.create( CleanTask.NAME, CleanTask )
@@ -169,8 +170,10 @@ class CompilePonyTask extends DefaultTask {
 
     @TaskAction
     void run() {
-        def options = "${pathOption()} ${outputOption()}"
-        def command = "ponyc $options src"
+        def config = project.extensions.getByName( 'pony' ) as PonyConfig
+
+        def options = "${pathOption()}${outputOption()}${docsOption( config )}${debugOption( config )}"
+        def command = "ponyc $options ${packageName( config )}"
 
         logger.info( "Running ponyc command: {}", command )
 
@@ -185,17 +188,29 @@ class CompilePonyTask extends DefaultTask {
         }
     }
 
+    private static String packageName( PonyConfig config ) {
+        config.packageName
+    }
+
     private String pathOption() {
         def dirs = UnpackArchivesTask.outputDir( project ).listFiles( { File f -> f.directory } as FileFilter )
         if ( dirs ) {
-            return '--path ' + dirs.collect { File f -> f.absolutePath }.join( ':' )
+            return ' --path ' + dirs.collect { File f -> f.absolutePath }.join( ':' )
         } else {
             return ''
         }
     }
 
     private String outputOption() {
-        "--output ${outputDir( project ).absolutePath}"
+        " --output ${outputDir( project ).absolutePath}"
+    }
+
+    private static String debugOption( PonyConfig config ) {
+        config.debug ? ' --debug' : ''
+    }
+
+    private static String docsOption( PonyConfig config ) {
+        config.docs ? ' --docs' : ''
     }
 
     static File outputDir( Project project ) {
