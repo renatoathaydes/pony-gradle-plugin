@@ -1,6 +1,6 @@
 # Pony Gradle Plugin
 
-A Gradle Plugin to build [Pony](http://www.ponylang.org/) projects.
+🐴 A Gradle Plugin to build [Pony](http://www.ponylang.org/) projects.
 
 ## Features
 
