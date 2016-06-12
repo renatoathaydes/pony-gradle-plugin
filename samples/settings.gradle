@@ -1,1 +1,1 @@
-include 'pony-basic'
+include 'pony-basic', 'pony-configured'

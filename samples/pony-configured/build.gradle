@@ -1,0 +1,7 @@
+apply plugin: 'com.athaydes.pony'
+
+pony {
+    packageName = 'pony-configured'
+    debug = true
+    docs = true
+}
