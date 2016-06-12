@@ -16,7 +16,7 @@ class PonyPackageFileParserSpec extends Specification {
 
     @Shared
     def parsedSimplePackage = new PonyPackage( 'test-project', '0',
-            [ new GitHubPonyDependency( 'jemc/pony-inspect', testProject ) ] )
+            [ new GitHubPonyDependency( testProject, 'jemc/pony-inspect', null ) ] )
 
     static final simplePackage = '''
 {
@@ -25,6 +25,22 @@ class PonyPackageFileParserSpec extends Specification {
     { "type": "github", "repo": "jemc/pony-inspect" }
   ]
 }'''
+
+    @Shared
+    def parsedVersionedPackage = new PonyPackage( 'versioned-project', '2.3.4',
+            [ new GitHubPonyDependency( testProject, 'jemc/pony-inspect', '1.0.1' ),
+              new GitHubPonyDependency( testProject, 'other/dep', null ) ] )
+
+    static final versionedPackage = '''
+{
+  "name": "versioned-project",
+  "version": "2.3.4",
+  "deps": [
+    { "type": "github", "repo": "jemc/pony-inspect", "version": "1.0.1" },
+    { "type": "github", "repo": "other/dep" }
+  ]
+}'''
+
 
     @Subject
     final parser = new PonyPackageFileParser( testProject )
@@ -40,6 +56,7 @@ class PonyPackageFileParserSpec extends Specification {
         where:
         ponyPackageFileContents | expectedResult
         simplePackage           | parsedSimplePackage
+        versionedPackage        | parsedVersionedPackage
     }
 
     def "Can resolve a simple package"() {

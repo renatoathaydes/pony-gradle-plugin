@@ -3,6 +3,7 @@ package com.athaydes.gradle.pony
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
+import org.gradle.api.Nullable
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -19,8 +20,10 @@ class GitHubPonyDependency implements PonyDependency {
 
     static final Logger logger = Logging.getLogger( GitHubPonyDependency )
 
-    String repo
     Project project
+    String repo
+    @Nullable
+    String version
 
     static final gitHubHost = "https://api.github.com"
 
@@ -55,15 +58,25 @@ class GitHubPonyDependency implements PonyDependency {
 
         logger.info( "GitHub repo $repo has ${tags.size()} tags." )
 
-        if ( actualTags.empty ) {
-            logger.info "Downloading master of $repo because no tags were found."
-            return URI.create( "$gitHubHost/repos/$repo/zipball" )
-                    .toURL()
-        } else {
-            logger.info "Downloading repository latest tag ${actualTags.first()}"
-            // FIXME find the right version, not just the latest!!
-            return URI.create( actualTags.first()[ "zipball_url" ].toString() ).toURL()
+        if ( actualTags.empty && !version ) {
+            logger.info "Downloading main branch of $repo because no version was specified and no tags exist."
+            return URI.create( "$gitHubHost/repos/$repo/zipball" ).toURL()
         }
+
+        def actualVersion = version ? actualTags.find { Map tag -> tag.name == version } : null
+
+        if ( actualVersion ) {
+            logger.info "Downloading tag for $repo matching required version: $version"
+        } else if ( !version && !actualTags.empty ) {
+            logger.info "Downloading repository latest tag ${actualTags.first()} (no version was specified)"
+        } else { // here, there must be a version specified
+            logger.info "Trying to download branch $version of $repo (no tag matching the required version exists)"
+            return URI.create( "$gitHubHost/repos/$repo/zipball/$version" ).toURL()
+        }
+
+        def tag = actualVersion ?: actualTags.first()
+
+        return URI.create( tag[ "zipball_url" ].toString() ).toURL()
     }
 
     static String zipName( String repo ) {

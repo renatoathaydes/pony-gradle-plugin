@@ -67,8 +67,9 @@ class PonyPackageFileParser {
         }
 
         def repo = map[ "repo" ] as String
+        def version = map[ "version" ] as String
 
-        return new GitHubPonyDependency( repo, project )
+        return new GitHubPonyDependency( project, repo, version )
     }
 
 }
