@@ -6,7 +6,7 @@ A Gradle Plugin to build [Pony](http://www.ponylang.org/) projects.
 
 * compile Pony sources.
 * resolve dependencies using `bundle.json` - compatible with [pony-stable](https://github.com/jemc/pony-stable).
-* resolve transitive dependencies from GitHub projects.
+* resolve transitive dependencies (if the dependencies have a `bundle.json` file).
 
 ## Build files
 
@@ -42,7 +42,8 @@ Example:
   "version": "2.3.4",
   "deps": [
     { "type": "github", "repo": "jemc/pony-inspect", "version": "1.0.1" },
-    { "type": "github", "repo": "other/dep" }
+    { "type": "github", "repo": "other/dep" },
+    { "type": "local", "local-path": "../my-other-dep" }
   ]
 }
 ```
@@ -51,7 +52,7 @@ Everything in the json file is optional. Unrecognized fields are ignored.
 
 ## Dependency types
 
-The only dependency type currently supported is `github` (more will be added later).
+The currently supported dependency types are the following:
 
 ### GitHub
 
@@ -66,3 +67,16 @@ GitHub dependencies have the following fields:
 
 If `version` is not given, the latest tag will be used, or if there's no tags, the main branch
 (usually `master`).
+
+See the [pony-basic](samples/pony-basic) sample for an example.
+
+### Local
+
+Local dependencies are simple Pony projects that are located in the local file system.
+
+They are declared using the following fields:
+
+* `type` (mandatory): must be `local`.
+* `local-path` (mandatory): the path, relative to the root of this project, to the dependency project.
+
+See the [pony-multi-modules](samples/pony-multi-modules) sample for an example.
