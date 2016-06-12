@@ -4,9 +4,13 @@ import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 
 @CompileStatic
 class PonyPackageFileParser {
+
+    static final Logger logger = Logging.getLogger( PonyPackageFileParser )
 
     final Project project
 
@@ -17,12 +21,22 @@ class PonyPackageFileParser {
     PonyPackage parse( String packageFile ) {
         def json = new JsonSlurper().parseText( packageFile )
 
-        def deps = json[ "deps" ] ?: [ ]
+        String name = json[ "name" ] ?: '<Unnamed package>'
+        String version = json[ "version" ] ?: '0'
+        def deps = ( json[ "deps" ] ?: [ ] ) as List
 
-        def dependencies = deps.collect { parseAnyDep( it ) }
+        logger.info( "Parsing ${deps.size()} dependencies of package $name - $version" )
 
-        println( json )
-        return new PonyPackage( project.name, project.version.toString(), dependencies )
+        List<PonyDependency> dependencies = [ ]
+
+        try {
+            dependencies = deps.collect { parseAnyDep( it ) }
+        } catch ( ClassCastException e ) {
+            throw new GradleException( "Dependencies of package $name are invalid - " +
+                    "${e.message ?: ''}", e )
+        }
+
+        return new PonyPackage( name, version, dependencies )
     }
 
     PonyDependency parseAnyDep( any ) {

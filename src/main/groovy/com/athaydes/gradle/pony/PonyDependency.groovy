@@ -4,6 +4,8 @@ import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 
 import java.nio.file.Path
 
@@ -15,6 +17,8 @@ interface PonyDependency {
 @Immutable( knownImmutableClasses = [ Project ] )
 class GitHubPonyDependency implements PonyDependency {
 
+    static final Logger logger = Logging.getLogger( GitHubPonyDependency )
+
     String repo
     Project project
 
@@ -25,8 +29,6 @@ class GitHubPonyDependency implements PonyDependency {
         def tags = new JsonSlurper().parseText(
                 URI.create( "$gitHubHost/repos/$repo/tags" )
                         .toURL().text ) as List
-
-        println( tags )
 
         URL zipBallUrl = resolveZipUrl( tags )
 
@@ -43,19 +45,22 @@ class GitHubPonyDependency implements PonyDependency {
             }
         }
 
-        println( "Downloaded ${repoZip.length()} bytes to ${repoZip.name}" )
+        logger.info( "Downloaded ${repoZip.length()} bytes to ${repoZip.name}" )
 
         return repoZip.toPath()
     }
 
     private URL resolveZipUrl( List tags ) {
         def actualTags = tags.findAll { it instanceof Map }
+
+        logger.info( "GitHub repo $repo has ${tags.size()} tags." )
+
         if ( actualTags.empty ) {
-            println "Repo does not have any tags, downloading master"
+            logger.info "Downloading master of $repo because no tags were found."
             return URI.create( "$gitHubHost/repos/$repo/zipball" )
                     .toURL()
         } else {
-            println "Downloading tag ${actualTags.first()}"
+            logger.info "Downloading repository latest tag ${actualTags.first()}"
             // FIXME find the right version, not just the latest!!
             return URI.create( actualTags.first()[ "zipball_url" ].toString() ).toURL()
         }

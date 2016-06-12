@@ -36,18 +36,25 @@ class ResolveDependenciesTask extends DefaultTask {
     static final String NAME = "resolvePonyDependencies"
 
     ResolveDependenciesTask() {
-        getInputs().file( project.buildFile )
+        getInputs().file( project.file( "bundle.json" ) )
         getOutputs().dir( outputDir() )
     }
 
     @TaskAction
     def run() {
+        def bundle = project.file( "bundle.json" )
+
+        if ( !bundle.file ) {
+            logger.info( "bundle.json file does not exist. No dependencies to resolve." )
+            return
+        }
+
         outputDir().mkdirs()
 
         PonyPackage ponyPackage = new PonyPackageFileParser( project )
-                .parse( project.file( "bundle.json" ).text )
+                .parse( bundle.text )
 
-        println( ponyPackage )
+        logger.debug( ponyPackage.toString() )
 
         resolveDependencies( ponyPackage.dependencies )
     }
@@ -56,9 +63,11 @@ class ResolveDependenciesTask extends DefaultTask {
         Paths.get( project.buildDir.absolutePath, "ext-libs" ).toFile()
     }
 
-    private static resolveDependencies( List<PonyDependency> dependencies ) {
-        println( "Resolved all dependencies: ${dependencies.size()}" )
-        println( dependencies.collect { it.resolvedPath() } )
+    private resolveDependencies( List<PonyDependency> dependencies ) {
+        logger.debug( "Resolving ${dependencies.size()} dependencies" )
+        dependencies.parallelStream().collect { PonyDependency it ->
+            logger.debug( "Resolved dependency: {}", it.resolvedPath() )
+        }
     }
 
 }
@@ -78,13 +87,13 @@ class UnpackArchivesTask extends DefaultTask {
             outputDir.listFiles( { File f, String name ->
                 name.endsWith( '.zip' )
             } as FilenameFilter ).each { File file ->
-                println "Unzipping $file"
+                logger.debug "Unzipping $file"
                 try {
                     ant.unzip( src: file,
                             dest: outputDir,
                             overwrite: true )
                 } catch ( e ) {
-                    e.printStackTrace()
+                    logger.error( "Failed to unzip file {} due to {}", file, e )
                 }
             }
         }

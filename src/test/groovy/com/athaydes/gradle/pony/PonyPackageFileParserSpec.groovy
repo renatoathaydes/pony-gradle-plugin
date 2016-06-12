@@ -20,6 +20,7 @@ class PonyPackageFileParserSpec extends Specification {
 
     static final simplePackage = '''
 {
+  "name": "test-project",
   "deps": [
     { "type": "github", "repo": "jemc/pony-inspect" }
   ]
