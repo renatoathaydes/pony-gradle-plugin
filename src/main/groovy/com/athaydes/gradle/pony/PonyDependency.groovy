@@ -106,7 +106,7 @@ class LocalDependency implements PonyDependency {
         logger.info( "Zipping local dependency to {}", destinationZip )
 
         project.ant.zip( destfile: destinationZip.absolutePath ) {
-            fileset( dir: dep.absolutePath )
+            zipfileset( dir: dep.absolutePath, prefix: "local-${dep.name}" )
         }
 
         return destinationZip.toPath()
