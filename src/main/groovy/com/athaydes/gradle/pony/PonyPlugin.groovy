@@ -3,6 +3,7 @@ package com.athaydes.gradle.pony
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Nullable
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -25,6 +26,7 @@ class PonyPlugin implements Plugin<Project> {
         project.tasks.create( ResolveDependenciesTask.NAME, ResolveDependenciesTask )
         project.tasks.create( UnpackArchivesTask.NAME, UnpackArchivesTask )
         project.tasks.create( CleanTask.NAME, CleanTask )
+        project.tasks.create( CompilePonyTask.NAME, CompilePonyTask )
     }
 
 }
@@ -42,7 +44,7 @@ class CleanTask extends Delete {
     static final String NAME = 'cleanPony'
 
     CleanTask() {
-        delete( Paths.get( project.buildDir.absolutePath, "ext-libs" ).toFile() )
+        delete( project.buildDir )
     }
 }
 
@@ -150,6 +152,54 @@ class UnpackArchivesTask extends DefaultTask {
 
     static File outputDir( Project project ) {
         Paths.get( project.buildDir.absolutePath, "ext-libs/unpacked" ).toFile()
+    }
+
+}
+
+@CompileStatic
+class CompilePonyTask extends DefaultTask {
+
+    static final String NAME = 'compilePony'
+
+    CompilePonyTask() {
+        getInputs().dir( UnpackArchivesTask.outputDir( project ) )
+        getOutputs().dir( outputDir( project ) )
+        dependsOn project.tasks.getByName( UnpackArchivesTask.NAME )
+    }
+
+    @TaskAction
+    void run() {
+        def options = "${pathOption()} ${outputOption()}"
+        def command = "ponyc $options src"
+
+        logger.info( "Running ponyc command: {}", command )
+
+        def process = command.execute( null as List, project.projectDir )
+
+        process.consumeProcessOutput( System.out as OutputStream, System.err )
+        def status = process.waitFor()
+        process.waitForProcessOutput()
+
+        if ( status != 0 ) {
+            throw new GradleException( "Ponyc failed, see output for details. Exit code: $status" )
+        }
+    }
+
+    private String pathOption() {
+        def dirs = UnpackArchivesTask.outputDir( project ).listFiles( { File f -> f.directory } as FileFilter )
+        if ( dirs ) {
+            return '--path ' + dirs.collect { File f -> f.absolutePath }.join( ':' )
+        } else {
+            return ''
+        }
+    }
+
+    private String outputOption() {
+        "--output ${outputDir( project ).absolutePath}"
+    }
+
+    static File outputDir( Project project ) {
+        project.buildDir
     }
 
 }

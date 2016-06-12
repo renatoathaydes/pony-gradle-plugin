@@ -75,6 +75,7 @@ class PonyPackageFileParserSpec extends Specification {
         project.tasks.getByName( ResolveDependenciesTask.NAME )
         project.tasks.getByName( UnpackArchivesTask.NAME )
         project.tasks.getByName( CleanTask.NAME )
+        project.tasks.getByName( CompilePonyTask.NAME )
     }
 
 }
