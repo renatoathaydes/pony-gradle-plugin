@@ -239,6 +239,28 @@ class PonyTestTask extends BaseCompileTask {
         config.testPackage
     }
 
+    @TaskAction
+    @Override
+    void run() {
+        super.run() // compile
+
+        def config = project.extensions.getByName( 'pony' ) as PonyConfig
+
+        def executable = new File( project.buildDir, packageName( config ) )
+
+        logger.info( "Running Pony test executable: $executable" )
+
+        def process = executable.absolutePath.execute( null as List, project.projectDir )
+
+        process.consumeProcessOutput( System.out as OutputStream, System.err )
+        def status = process.waitFor()
+        process.waitForProcessOutput()
+
+        if ( status != 0 ) {
+            throw new GradleException( "Pony tests failed, see output for details. Exit code: $status" )
+        }
+    }
+
 }
 
 @CompileStatic

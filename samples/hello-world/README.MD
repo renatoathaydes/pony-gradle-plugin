@@ -1,9 +1,10 @@
 ## Hello World Sample
 
-This sample contains only two files:
+This sample contains only three files:
 
 * build.gradle
 * hello/Main.pony
+* test/pony-test.pony
 
 To compile:
 
@@ -15,4 +16,10 @@ To run:
 
 ```
 build/hello
+```
+
+To test:
+
+```
+gradle test
 ```
