@@ -6,6 +6,7 @@ package com.athaydes.gradle.pony
 class PonyConfig {
 
     String packageName = 'src'
+    String testPackage = 'test'
     boolean debug = false
     boolean docs = false
 

@@ -78,6 +78,7 @@ class PonyPackageFileParserSpec extends Specification {
         project.tasks.getByName( UnpackArchivesTask.NAME )
         project.tasks.getByName( CleanTask.NAME )
         project.tasks.getByName( CompilePonyTask.NAME )
+        project.tasks.getByName( PonyTestTask.NAME )
 
         and: 'the extensions should be added'
         project.extensions.getByName( 'pony' )

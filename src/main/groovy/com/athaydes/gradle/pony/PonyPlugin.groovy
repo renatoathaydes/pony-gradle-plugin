@@ -28,6 +28,7 @@ class PonyPlugin implements Plugin<Project> {
         project.tasks.create( UnpackArchivesTask.NAME, UnpackArchivesTask )
         project.tasks.create( CleanTask.NAME, CleanTask )
         project.tasks.create( CompilePonyTask.NAME, CompilePonyTask )
+        project.tasks.create( PonyTestTask.NAME, PonyTestTask )
     }
 
 }
@@ -167,13 +168,49 @@ class UnpackArchivesTask extends DefaultTask {
 }
 
 @CompileStatic
-class CompilePonyTask extends DefaultTask {
+class CompilePonyTask extends BaseCompileTask {
 
     static final String NAME = 'compilePony'
 
     CompilePonyTask() {
         description = 'compiles Pony sources and dependencies'
+        group = 'build'
+    }
 
+    @Override
+    String packageName( PonyConfig config ) {
+        config.packageName
+    }
+
+}
+
+@CompileStatic
+class PonyTestTask extends BaseCompileTask {
+
+    static final String NAME = 'testPony'
+
+    PonyTestTask() {
+        description = 'compiles Pony sources, dependencies and the test package, then runs the tests'
+        group = 'verification'
+    }
+
+    @Override
+    String packageName( PonyConfig config ) {
+        config.testPackage
+    }
+
+    @Override
+    List<String> otherPackages() {
+        def config = project.extensions.getByName( 'pony' ) as PonyConfig
+
+        super.otherPackages() + [ project.file(config.packageName).absolutePath ]
+    }
+}
+
+@CompileStatic
+abstract class BaseCompileTask extends DefaultTask {
+
+    BaseCompileTask() {
         getInputs().dir( UnpackArchivesTask.outputDir( project ) )
         getOutputs().dir( outputDir( project ) )
         dependsOn project.tasks.getByName( UnpackArchivesTask.NAME )
@@ -199,17 +236,21 @@ class CompilePonyTask extends DefaultTask {
         }
     }
 
-    private static String packageName( PonyConfig config ) {
-        config.packageName
-    }
+    abstract String packageName( PonyConfig config )
 
     private String pathOption() {
-        def dirs = UnpackArchivesTask.outputDir( project ).listFiles( { File f -> f.directory } as FileFilter )
+        def dirs = otherPackages()
         if ( dirs ) {
-            return ' --path ' + dirs.collect { File f -> f.absolutePath }.join( ':' )
+            return ' --path ' + dirs.join( ':' )
         } else {
             return ''
         }
+    }
+
+    List<String> otherPackages() {
+        UnpackArchivesTask.outputDir( project )
+                .listFiles( { File f -> f.directory } as FileFilter )
+                .collect { File f -> f.absolutePath }
     }
 
     private String outputOption() {
