@@ -1,6 +1,4 @@
-plugins {
-    id "com.athaydes.pony" version "0.1.0"
-}
+apply plugin: 'com.athaydes.pony'
 
 pony {
     packageName = 'hello'
