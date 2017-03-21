@@ -1,5 +1,6 @@
 package com.athaydes.gradle.pony
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 import org.gradle.api.DefaultTask
@@ -8,6 +9,10 @@ import org.gradle.api.Nullable
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Path
@@ -63,31 +68,42 @@ class ResolveDependenciesTask extends DefaultTask {
     ResolveDependenciesTask() {
         description = 'resolves the project dependencies'
         group = 'build'
-
-        getInputs().file( project.file( "bundle.json" ) )
-        getOutputs().dir( outputDir( project ) )
     }
 
-    @TaskAction
-    def run() {
+    @Optional
+    @InputFile
+    File getBundleFile() {
         def bundle = project.file( "bundle.json" )
-
-        if ( !bundle.file ) {
-            logger.info( "bundle.json file does not exist. No dependencies to resolve." )
-            return
+        if ( bundle.file ) {
+            return bundle
+        } else {
+            return null
         }
+    }
 
-        outputDir( project ).mkdirs()
-
-        PonyPackage ponyPackage = packageParser.parse( bundle.text )
-
-        logger.debug( ponyPackage.toString() )
-
-        resolveDependencies( ponyPackage.dependencies )
+    @OutputDirectory
+    File getOutputDir() {
+        outputDir( project )
     }
 
     static File outputDir( Project project ) {
         Paths.get( project.buildDir.absolutePath, "ext-libs/zips" ).toFile()
+    }
+
+    @TaskAction
+    def run() {
+        if ( !bundleFile.file ) {
+            logger.info( "bundle.json file does not exist. No dependencies to resolve." )
+            return
+        }
+
+        outputDir.mkdirs()
+
+        PonyPackage ponyPackage = packageParser.parse( bundleFile.text )
+
+        logger.debug( ponyPackage.toString() )
+
+        resolveDependencies( ponyPackage.dependencies )
     }
 
     private void resolveDependencies( List<PonyDependency> dependencies ) {
@@ -126,6 +142,7 @@ class ResolveDependenciesTask extends DefaultTask {
 
 }
 
+@CompileStatic
 class UnpackArchivesTask extends DefaultTask {
 
     static final String NAME = "unpackPonyDependencies"
@@ -134,11 +151,30 @@ class UnpackArchivesTask extends DefaultTask {
         description = 'unpacks the dependencies archives'
         group = 'build'
 
-        getInputs().dir( ResolveDependenciesTask.outputDir( project ) )
-        getOutputs().dir( outputDir( project ) )
         dependsOn project.tasks.getByName( ResolveDependenciesTask.NAME )
     }
 
+    static File outputDir( Project project ) {
+        Paths.get( project.buildDir.absolutePath, "ext-libs/unpacked" ).toFile()
+    }
+
+    @Optional
+    @InputDirectory
+    File getInputDir() {
+        def input = ResolveDependenciesTask.outputDir( project )
+        if ( input.directory ) {
+            return input
+        } else {
+            return null
+        }
+    }
+
+    @OutputDirectory
+    File getOutputDir() {
+        outputDir( project )
+    }
+
+    @CompileDynamic
     @TaskAction
     def run() {
         def zipsDir = ResolveDependenciesTask.outputDir( project )
@@ -159,10 +195,6 @@ class UnpackArchivesTask extends DefaultTask {
                 }
             }
         }
-    }
-
-    static File outputDir( Project project ) {
-        Paths.get( project.buildDir.absolutePath, "ext-libs/unpacked" ).toFile()
     }
 
 }
@@ -194,26 +226,48 @@ class PonyTestTask extends BaseCompileTask {
         group = 'verification'
     }
 
+    @InputDirectory
+    File getMainPackageDir() {
+        def config = project.extensions.getByName( 'pony' ) as PonyConfig
+
+        // besides the package of the test itself, the package of the application must be added
+        project.file( config.packageName )
+    }
+
     @Override
     String packageName( PonyConfig config ) {
         config.testPackage
     }
 
-    @Override
-    List<String> otherPackages() {
-        def config = project.extensions.getByName( 'pony' ) as PonyConfig
-
-        super.otherPackages() + [ project.file(config.packageName).absolutePath ]
-    }
 }
 
 @CompileStatic
 abstract class BaseCompileTask extends DefaultTask {
 
     BaseCompileTask() {
-        getInputs().dir( UnpackArchivesTask.outputDir( project ) )
-        getOutputs().dir( outputDir( project ) )
         dependsOn project.tasks.getByName( UnpackArchivesTask.NAME )
+    }
+
+    @Optional
+    @InputDirectory
+    File getDepsDir() {
+        def dir = UnpackArchivesTask.outputDir( project )
+        if ( dir.directory ) {
+            return dir
+        } else {
+            return null
+        }
+    }
+
+    @InputDirectory
+    File getPackageDir() {
+        def config = project.extensions.getByName( 'pony' ) as PonyConfig
+        project.file( packageName( config ) )
+    }
+
+    @OutputDirectory
+    File getOutputDir() {
+        project.buildDir
     }
 
     @TaskAction
@@ -247,14 +301,14 @@ abstract class BaseCompileTask extends DefaultTask {
         }
     }
 
-    List<String> otherPackages() {
+    private List<String> otherPackages() {
         UnpackArchivesTask.outputDir( project )
                 .listFiles( { File f -> f.directory } as FileFilter )
                 .collect { File f -> f.absolutePath }
     }
 
     private String outputOption() {
-        " --output ${outputDir( project ).absolutePath}"
+        " --output ${outputDir.absolutePath}"
     }
 
     private static String debugOption( PonyConfig config ) {
@@ -263,10 +317,6 @@ abstract class BaseCompileTask extends DefaultTask {
 
     private static String docsOption( PonyConfig config ) {
         config.docs ? ' --docs' : ''
-    }
-
-    static File outputDir( Project project ) {
-        project.buildDir
     }
 
 }
