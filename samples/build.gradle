@@ -8,7 +8,7 @@ subprojects {
         }
 
         dependencies {
-            classpath "com.athaydes.gradle.pony:pony-gradle-plugin:1.0-SNAPSHOT"
+            classpath "com.athaydes.gradle.pony:pony-gradle-plugin:0.2.0"
         }
     }
 }
