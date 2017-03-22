@@ -87,7 +87,7 @@ class ResolveDependenciesTask extends DefaultTask {
     }
 
     static File outputDir( Project project ) {
-        Paths.get( project.buildDir.absolutePath, "ext-libs/zips" ).toFile()
+        Paths.get( project.projectDir.absolutePath, "ext-libs/zips" ).toFile()
     }
 
     @TaskAction
@@ -155,7 +155,7 @@ class UnpackArchivesTask extends DefaultTask {
     }
 
     static File outputDir( Project project ) {
-        Paths.get( project.buildDir.absolutePath, "ext-libs/unpacked" ).toFile()
+        Paths.get( project.projectDir.absolutePath, "ext-libs/unpacked" ).toFile()
     }
 
     @Optional
