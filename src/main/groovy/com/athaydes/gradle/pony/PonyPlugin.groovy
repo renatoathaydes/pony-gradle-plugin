@@ -92,7 +92,7 @@ class ResolveDependenciesTask extends DefaultTask {
 
     @TaskAction
     def run() {
-        if ( !bundleFile.file ) {
+        if ( !bundleFile?.file ) {
             logger.info( "bundle.json file does not exist. No dependencies to resolve." )
             return
         }
