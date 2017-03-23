@@ -6,20 +6,28 @@ This sample contains only three files:
 * hello/Main.pony
 * test/pony-test.pony
 
-To compile:
+### Building
 
 ```
-gradle compile
+../../gradlew compile
 ```
 
-To run:
+### Running
 
 ```
 build/hello
 ```
 
-To test:
+### Testing
 
 ```
-gradle test
+../../gradlew test
+```
+
+### Clean up
+
+Delete all built resources, but not downloaded dependencies in `ext-libs`.
+
+```
+../../gradlew clean
 ```

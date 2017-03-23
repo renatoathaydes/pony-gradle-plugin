@@ -20,3 +20,11 @@ build/basic
 ```
 ../../gradlew test
 ```
+
+### Clean up
+
+Delete all built resources, but not downloaded dependencies in `ext-libs`.
+
+```
+../../gradlew clean
+```
