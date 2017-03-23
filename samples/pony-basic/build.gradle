@@ -1,1 +1,5 @@
 apply plugin: 'com.athaydes.pony'
+
+pony {
+    packageName = 'basic'
+}

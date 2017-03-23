@@ -1,5 +1,5 @@
 {
   "deps": [
-    { "type": "github", "repo": "jemc/pony-zmq", "version": "6e9157e" }
+    { "type": "github", "repo": "jemc/pony-zmq", "version": "1757f34" }
   ]
 }
