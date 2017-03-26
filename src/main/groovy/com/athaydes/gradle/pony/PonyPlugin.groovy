@@ -296,10 +296,12 @@ abstract class BaseCompileTask extends DefaultTask {
     void run() {
         def config = project.extensions.getByName( 'pony' ) as PonyConfig
 
-        def options = "${pathOption()}${outputOption()}${docsOption( config )}${debugOption( config )}"
-        def command = "ponyc $options ${packageName( config )}"
+        def options = pathOption() + outputOption() +
+                docsOption( config ) + debugOption( config )
 
-        logger.info( "Running ponyc command: {}", command )
+        def command = [ 'ponyc' ] + ( options.flatten() as List<String> ) + [ packageName( config ) ]
+
+        logger.info( "Running ponyc command: {}", command.join( ' ' ) )
 
         def process = command.execute( null as List, project.projectDir )
 
@@ -314,12 +316,12 @@ abstract class BaseCompileTask extends DefaultTask {
 
     abstract String packageName( PonyConfig config )
 
-    private String pathOption() {
+    private List<String> pathOption() {
         def dirs = otherPackages()
         if ( dirs ) {
-            return ' --path ' + dirs.join( ':' )
+            return [ '--path ', dirs.join( ':' ) ]
         } else {
-            return ''
+            return [ ]
         }
     }
 
@@ -329,16 +331,16 @@ abstract class BaseCompileTask extends DefaultTask {
                 .collect { File f -> f.absolutePath }
     }
 
-    private String outputOption() {
-        " --output ${outputDir.absolutePath}"
+    private List<String> outputOption() {
+        [ '--output', outputDir.absolutePath ]
     }
 
-    private static String debugOption( PonyConfig config ) {
-        config.debug ? ' --debug' : ''
+    private static List<String> debugOption( PonyConfig config ) {
+        config.debug ? [ ' --debug' ] : [ ]
     }
 
-    private static String docsOption( PonyConfig config ) {
-        config.docs ? ' --docs' : ''
+    private static List<String> docsOption( PonyConfig config ) {
+        config.docs ? [ ' --docs' ] : [ ]
     }
 
 }
