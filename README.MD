@@ -8,9 +8,54 @@
 * resolve dependencies using `bundle.json` - compatible with [pony-stable](https://github.com/jemc/pony-stable).
 * resolve transitive dependencies (if the dependencies have a `bundle.json` file).
 
+## Getting started
+
+Run the following commands to create a Pony project with Gradle support:
+
+* create and enter your new project directory.
+
+```
+mkdir my-project && cd my-project
+```
+
+* create the Gradle build file.
+
+```
+echo '
+plugins {
+  id "com.athaydes.pony" version "0.2.0"
+}
+' > build.gradle
+```
+
+* create a Pony package with a `Main` actor.
+
+```
+mkdir main
+echo '
+actor Main
+    new create(env: Env) =>
+        env.out.print("Hello world!")
+' > main/main.pony
+```
+
+* compile with Gradle.
+
+```
+gradle compile
+```
+
+* run the generated binary.
+
+```
+build/main
+```
+
+The following sections explain how this all works in detail.
+
 ## Build files
 
-To enable Gradle support, a basic `build.gradle` file must be supplied.
+To enable Gradle support, a basic `build.gradle` file must be supplied to apply this plugin.
 Dependencies are declared separately (to be compatible with `pony-stable`) in the `bundle.json` file.
 
 ### `build.gradle` - the Gradle build file.
@@ -23,7 +68,20 @@ plugins {
 }
 ```
 
-The above is all you need, but you may configure the build with the following options:
+The above is all you need, but you may configure the build using the `pony` block:
+
+```groovy
+plugins {
+  id "com.athaydes.pony" version "0.2.0"
+}
+
+pony {
+  packageName = 'hello'
+  docs = true
+}
+```
+
+### Configuration options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -99,6 +157,7 @@ The following tasks are added by this plugin:
 * `resolvePonyDependencies`: resolves the project dependencies.
 * `unpackPonyDependencies`: unpacks the dependencies archives.
 * `compilePony`: compiles Pony sources and dependencies.
+* `testPony`: compiles Pony sources and tests, then runs the test package.
 
 Normally, all you need to do to build your project is run `compilePony`, or just `compile`:
 
@@ -117,10 +176,10 @@ gradle resolve
 The above will resolve all dependencies. If any dependencies need to be downloaded, they will be,
 so that transitive dependencies can be also resolved.
 
-To **update dependencies**, currently, the only way is to clean the build, then compile again.
+To compile both sources and test sources, then run tests, simply run the `test` task:
 
 ```
-gradle clean compile
+gradle test
 ```
 
 ## Build layout
