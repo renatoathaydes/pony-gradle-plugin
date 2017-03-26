@@ -25,11 +25,19 @@ plugins {
 
 The above is all you need, but you may configure the build with the following options:
 
-* `packageName`: String - name of the package to compile. Defaults to `src`.
-* `docs`: boolean - whether to generate docs. Defaults to `false`.
-* `debug`: boolean - whether to use the `--debug` option (will skip the LLVM optimizations passes).
-           Defaults to `false`.
-           
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+|packageName|String|`src`|name of the package to compile.|
+|testPackage|String|`test`|name of the test package to compile and run.|
+|docs|Boolean|false|whether to generate docs.|
+|debug|Boolean|false|Don't optimise the output.|
+|library|Boolean|false|Generate a C-API compatible static library.|
+|strip|Boolean|false|Strip debug info.| 
+|runtimebc|Boolean|false|Compile with the LLVM bitcode file for the runtime.|
+|pic|Boolean|false|Compile using position independent code.|
+|compileOptions|List|`[]`|Extra compiler options to use when compiling.|
+|testOptions|List|`[]`|Extra compiler options to use when compiling and running tests.|
+
 To get started, see the [Hello World](samples/hello-world) sample.
 
 See the [pony-configured](samples/pony-configured) sample for a build file that uses all options. 

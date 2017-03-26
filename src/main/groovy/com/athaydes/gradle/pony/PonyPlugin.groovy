@@ -214,6 +214,11 @@ class CompilePonyTask extends BaseCompileTask {
         config.packageName
     }
 
+    @Override
+    List getAllOptions( PonyConfig config ) {
+        super.getAllOptions( config ) + config.compileOptions
+    }
+
 }
 
 @CompileStatic
@@ -237,6 +242,11 @@ class PonyTestTask extends BaseCompileTask {
     @Override
     String packageName( PonyConfig config ) {
         config.testPackage
+    }
+
+    @Override
+    List getAllOptions( PonyConfig config ) {
+        super.getAllOptions( config ) + config.testOptions
     }
 
     @TaskAction
@@ -292,13 +302,16 @@ abstract class BaseCompileTask extends DefaultTask {
         project.buildDir
     }
 
+    protected List getAllOptions( PonyConfig config ) {
+        pathOption() + outputOption() +
+                docsOption( config ) + debugOption( config ) + libraryOption( config ) +
+                stripDebugOption( config ) + runtimeBcOption( config ) + usePicOption( config )
+    }
+
     @TaskAction
     void run() {
         def config = project.extensions.getByName( 'pony' ) as PonyConfig
-
-        def options = pathOption() + outputOption() +
-                docsOption( config ) + debugOption( config ) + libraryOption( config ) +
-                stripDebugOption( config ) + runtimeBcOption( config ) + usePicOption( config )
+        def options = getAllOptions( config )
 
         def command = [ 'ponyc' ] + ( options.flatten() as List<String> ) + [ packageName( config ) ]
 
@@ -349,15 +362,15 @@ abstract class BaseCompileTask extends DefaultTask {
     }
 
     private static List<String> stripDebugOption( PonyConfig config ) {
-        config.stripDebugInfo ? [ '--strip' ] : [ ]
+        config.strip ? [ '--strip' ] : [ ]
     }
 
     private static List<String> runtimeBcOption( PonyConfig config ) {
-        config.runtimeBC ? [ '--runtimebc' ] : [ ]
+        config.runtimebc ? [ '--runtimebc' ] : [ ]
     }
 
     private static List<String> usePicOption( PonyConfig config ) {
-        config.usePic ? [ '--pic' ] : [ ]
+        config.pic ? [ '--pic' ] : [ ]
     }
 
 }

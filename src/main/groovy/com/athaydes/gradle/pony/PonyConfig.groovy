@@ -10,8 +10,10 @@ class PonyConfig {
     boolean debug = false
     boolean docs = false
     boolean library = false
-    boolean stripDebugInfo = false
-    boolean runtimeBC = false
-    boolean usePic = false
+    boolean strip = false
+    boolean runtimebc = false
+    boolean pic = false
+    List<String> compileOptions = [ ]
+    List<String> testOptions = [ ]
 
 }
