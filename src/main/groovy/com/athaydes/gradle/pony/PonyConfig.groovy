@@ -5,7 +5,7 @@ package com.athaydes.gradle.pony
  */
 class PonyConfig {
 
-    String packageName = 'src'
+    String packageName = 'main'
     String testPackage = 'test'
     boolean debug = false
     boolean docs = false

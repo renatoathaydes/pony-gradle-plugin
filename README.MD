@@ -27,7 +27,7 @@ The above is all you need, but you may configure the build with the following op
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-|packageName|String|`src`|name of the package to compile.|
+|packageName|String|`main`|name of the package to compile.|
 |testPackage|String|`test`|name of the test package to compile and run.|
 |docs|Boolean|false|whether to generate docs.|
 |debug|Boolean|false|Don't optimise the output.|
