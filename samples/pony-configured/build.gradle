@@ -4,4 +4,7 @@ pony {
     packageName = 'pony-configured'
     debug = true
     docs = true
+    stripDebugInfo = true
+    //runtimeBC = true
+    usePic = true
 }

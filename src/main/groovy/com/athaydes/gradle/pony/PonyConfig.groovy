@@ -9,5 +9,9 @@ class PonyConfig {
     String testPackage = 'test'
     boolean debug = false
     boolean docs = false
+    boolean library = false
+    boolean stripDebugInfo = false
+    boolean runtimeBC = false
+    boolean usePic = false
 
 }

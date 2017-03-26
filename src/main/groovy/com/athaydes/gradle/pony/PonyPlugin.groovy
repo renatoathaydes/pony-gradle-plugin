@@ -297,7 +297,8 @@ abstract class BaseCompileTask extends DefaultTask {
         def config = project.extensions.getByName( 'pony' ) as PonyConfig
 
         def options = pathOption() + outputOption() +
-                docsOption( config ) + debugOption( config )
+                docsOption( config ) + debugOption( config ) + libraryOption( config ) +
+                stripDebugOption( config ) + runtimeBcOption( config ) + usePicOption( config )
 
         def command = [ 'ponyc' ] + ( options.flatten() as List<String> ) + [ packageName( config ) ]
 
@@ -319,7 +320,7 @@ abstract class BaseCompileTask extends DefaultTask {
     private List<String> pathOption() {
         def dirs = otherPackages()
         if ( dirs ) {
-            return [ '--path ', dirs.join( ':' ) ]
+            return [ '--path', dirs.join( ':' ) ]
         } else {
             return [ ]
         }
@@ -336,11 +337,27 @@ abstract class BaseCompileTask extends DefaultTask {
     }
 
     private static List<String> debugOption( PonyConfig config ) {
-        config.debug ? [ ' --debug' ] : [ ]
+        config.debug ? [ '--debug' ] : [ ]
     }
 
     private static List<String> docsOption( PonyConfig config ) {
-        config.docs ? [ ' --docs' ] : [ ]
+        config.docs ? [ '--docs' ] : [ ]
+    }
+
+    private static List<String> libraryOption( PonyConfig config ) {
+        config.library ? [ '--library' ] : [ ]
+    }
+
+    private static List<String> stripDebugOption( PonyConfig config ) {
+        config.stripDebugInfo ? [ '--strip' ] : [ ]
+    }
+
+    private static List<String> runtimeBcOption( PonyConfig config ) {
+        config.runtimeBC ? [ '--runtimebc' ] : [ ]
+    }
+
+    private static List<String> usePicOption( PonyConfig config ) {
+        config.usePic ? [ '--pic' ] : [ ]
     }
 
 }
